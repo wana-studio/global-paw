@@ -1,33 +1,24 @@
 import type { CollectionConfig } from 'payload'
 
+/**
+ * CMS Admin Users - for Payload dashboard access only.
+ * Chrome extension users are stored in AppUsers collection.
+ */
 export const Users: CollectionConfig = {
   slug: 'users',
   admin: {
     useAsTitle: 'email',
+    description: 'CMS Administrators',
   },
   auth: true,
   fields: [
     {
-      name: 'selectedBackground',
-      type: 'relationship',
-      relationTo: 'wallpapers',
-    },
-    {
-      name: 'selectedLanguage',
+      name: 'role',
       type: 'select',
+      defaultValue: 'editor',
       options: [
-        { label: 'English', value: 'en' },
-        { label: 'Arabic', value: 'ar' },
-        { label: 'Persian', value: 'fa' },
-      ],
-    },
-    {
-      name: 'selectedTheme',
-      type: 'select',
-      options: [
-        { label: 'Light', value: 'light' },
-        { label: 'Dark', value: 'dark' },
-        { label: 'System', value: 'system' },
+        { label: 'Admin', value: 'admin' },
+        { label: 'Editor', value: 'editor' },
       ],
     },
   ],

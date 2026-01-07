@@ -68,6 +68,7 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
+    'app-users': AppUser;
     media: Media;
     'wallpaper-categories': WallpaperCategory;
     wallpapers: Wallpaper;
@@ -86,6 +87,7 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
+    'app-users': AppUsersSelect<false> | AppUsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'wallpaper-categories': WallpaperCategoriesSelect<false> | WallpaperCategoriesSelect<true>;
     wallpapers: WallpapersSelect<false> | WallpapersSelect<true>;
@@ -135,14 +137,14 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * CMS Administrators
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
   id: number;
-  selectedBackground?: (number | null) | Wallpaper;
-  selectedLanguage?: ('en' | 'ar' | 'fa') | null;
-  selectedTheme?: ('light' | 'dark' | 'system') | null;
+  role?: ('admin' | 'editor') | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -160,6 +162,25 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+}
+/**
+ * Chrome extension users (synced from Supabase Auth)
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "app-users".
+ */
+export interface AppUser {
+  id: number;
+  /**
+   * The auth.users.id from Supabase
+   */
+  supabaseId: string;
+  email?: string | null;
+  selectedBackground?: (number | null) | Wallpaper;
+  selectedLanguage?: ('en' | 'ar' | 'fa') | null;
+  selectedTheme?: ('light' | 'dark' | 'system') | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -268,7 +289,10 @@ export interface Timezone {
  */
 export interface Conversation {
   id: number;
-  userId: string;
+  /**
+   * The app user who owns this conversation
+   */
+  appUser: number | AppUser;
   title?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -312,6 +336,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'app-users';
+        value: number | AppUser;
       } | null)
     | ({
         relationTo: 'media';
@@ -400,9 +428,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  selectedBackground?: T;
-  selectedLanguage?: T;
-  selectedTheme?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -419,6 +445,19 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "app-users_select".
+ */
+export interface AppUsersSelect<T extends boolean = true> {
+  supabaseId?: T;
+  email?: T;
+  selectedBackground?: T;
+  selectedLanguage?: T;
+  selectedTheme?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -518,7 +557,7 @@ export interface TimezonesSelect<T extends boolean = true> {
  * via the `definition` "conversations_select".
  */
 export interface ConversationsSelect<T extends boolean = true> {
-  userId?: T;
+  appUser?: T;
   title?: T;
   updatedAt?: T;
   createdAt?: T;

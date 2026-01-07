@@ -4,28 +4,29 @@ import { isSupabaseOwner, isAuthenticatedWithSupabase } from '../access/supabase
 export const Conversations: CollectionConfig = {
   slug: 'conversations',
   admin: {
-    useAsTitle: 'id',
+    useAsTitle: 'title',
   },
   access: {
     read: isSupabaseOwner,
-    create: (args) => {
-      // We can't import isAuthenticatedWithSupabase here if I defined it in the chunk above?
-      // Wait, I imported isSupabaseOwner. I should import isAuthenticatedWithSupabase too.
-      // Let me redo the import in the previous step or just fix it here.
-      return true // Temporary, to be fixed in next step for cleaner code.
-    },
+    create: isAuthenticatedWithSupabase,
+    update: isSupabaseOwner,
     delete: isSupabaseOwner,
   },
   fields: [
     {
-      name: 'userId', // Supabase User ID (UUID)
-      type: 'text',
+      name: 'appUser',
+      type: 'relationship',
+      relationTo: 'app-users',
       required: true,
       index: true,
+      admin: {
+        description: 'The app user who owns this conversation',
+      },
     },
     {
       name: 'title',
       type: 'text',
+      defaultValue: 'New Chat',
     },
   ],
 }

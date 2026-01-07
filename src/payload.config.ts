@@ -15,6 +15,7 @@ import { Timezones } from './collections/Timezones'
 import { Conversations } from './collections/Conversations'
 import { Messages } from './collections/Messages'
 import { Users } from './collections/Users'
+import { AppUsers } from './collections/AppUsers'
 import { Media } from './collections/Media'
 
 const filename = fileURLToPath(import.meta.url)
@@ -29,6 +30,7 @@ export default buildConfig({
   },
   collections: [
     Users,
+    AppUsers,
     Media,
     WallpaperCategories,
     Wallpapers,
@@ -41,7 +43,7 @@ export default buildConfig({
     Messages,
   ],
   localization: {
-    locales: ['en', 'ar', 'fa'], // Added fa based on user name/context (MrMajidi/dastyar sounds Persian), safe to add. User explicitly mentioned multilingual.
+    locales: ['en', 'ar', 'fa'],
     defaultLocale: 'en',
     fallback: true,
   },

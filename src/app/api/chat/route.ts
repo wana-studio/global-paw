@@ -34,14 +34,41 @@ export async function POST(req: Request) {
   // 2. Initialize Payload
   const payload = await getPayload({ config })
 
-  // 3. Ensure Conversation Exists or Create New
+  // 3. Lookup or Create AppUser
+  let appUser = await payload.find({
+    collection: 'app-users',
+    where: {
+      supabaseId: {
+        equals: user.id,
+      },
+    },
+    limit: 1,
+  })
+
+  let appUserId: number
+
+  if (appUser.docs.length === 0) {
+    // Create new AppUser if not found (fallback if trigger didn't fire)
+    const newAppUser = await payload.create({
+      collection: 'app-users',
+      data: {
+        supabaseId: user.id,
+        email: user.email || '',
+      },
+    })
+    appUserId = newAppUser.id
+  } else {
+    appUserId = appUser.docs[0].id
+  }
+
+  // 4. Ensure Conversation Exists or Create New
   let activeConversationId = conversationId
 
   if (!activeConversationId) {
     const newConv = await payload.create({
       collection: 'conversations',
       data: {
-        userId: user.id,
+        appUser: appUserId,
         title: messages[0]?.content.slice(0, 50) || 'New Chat',
       },
     })
@@ -63,7 +90,7 @@ export async function POST(req: Request) {
 
   // 5. Call AI with Gemini 2.5 Flash and Google Search tool
   const result = streamText({
-    model: google('gemini-2.5-flash-preview-05-20'),
+    model: google('gemini-2.5-flash'),
     tools: {
       google_search: google.tools.googleSearch({}),
     },
