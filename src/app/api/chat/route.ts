@@ -8,8 +8,11 @@ import { getPayload } from 'payload'
 export const maxDuration = 30
 
 export async function POST(req: Request) {
-  const { messages, conversationId } = await req.json()
-
+  const { messages, prompt, conversationId } = await req.json()
+  let _messages = messages
+  if (!_messages?.length && prompt) {
+    _messages = [{ role: 'user', content: prompt }]
+  }
   // 1. Authenticate User with Supabase
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
@@ -69,14 +72,14 @@ export async function POST(req: Request) {
       collection: 'conversations',
       data: {
         appUser: appUserId,
-        title: messages[0]?.content.slice(0, 50) || 'New Chat',
+        title: _messages[0]?.content.slice(0, 50) || 'New Chat',
       },
     })
     activeConversationId = newConv.id
   }
 
   // 4. Save User Message
-  const lastUserMessage = messages[messages.length - 1]
+  const lastUserMessage = _messages[_messages.length - 1]
   if (lastUserMessage?.role === 'user') {
     await payload.create({
       collection: 'messages',
@@ -94,7 +97,7 @@ export async function POST(req: Request) {
     tools: {
       google_search: google.tools.googleSearch({}),
     },
-    messages,
+    messages: _messages,
     onFinish: async ({ text }) => {
       // 6. Save Assistant Message
       await payload.create({
