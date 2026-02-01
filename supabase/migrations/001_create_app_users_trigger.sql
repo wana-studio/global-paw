@@ -2,15 +2,14 @@
 -- Run this in your Supabase SQL Editor or as a migration
 
 -- Note: Since Payload manages the 'app_users' table via Drizzle,
--- we create a trigger that inserts into Payload's table.
--- The table name follows Payload's naming convention.
+-- the table uses SERIAL (auto-increment integer) for the 'id' column.
+-- We let PostgreSQL handle the ID generation automatically.
 
 -- Create trigger function to auto-insert app user on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.app_users (
-    id,
     supabase_id,
     email,
     selected_language,
@@ -19,8 +18,7 @@ BEGIN
     updated_at
   )
   VALUES (
-    gen_random_uuid(), -- Payload uses its own ID
-    NEW.id,            -- Supabase Auth user ID
+    NEW.id::text,      -- Supabase Auth user ID (UUID as text)
     NEW.email,
     'en',              -- Default language
     'system',          -- Default theme
@@ -29,6 +27,11 @@ BEGIN
   )
   ON CONFLICT (supabase_id) DO NOTHING; -- Prevent duplicates
   RETURN NEW;
+EXCEPTION
+  WHEN others THEN
+    -- Log error but don't fail the signup
+    RAISE WARNING 'Failed to create app_user for %: %', NEW.id, SQLERRM;
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -43,3 +46,4 @@ CREATE TRIGGER on_auth_user_created
 -- Grant necessary permissions
 GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
 GRANT ALL ON public.app_users TO postgres, anon, authenticated, service_role;
+GRANT USAGE, SELECT ON SEQUENCE app_users_id_seq TO postgres, anon, authenticated, service_role;
