@@ -4,7 +4,7 @@ const SUPPORTED_LOCALES = ['en', 'ar', 'fa']
 const DEFAULT_LOCALE = 'en'
 
 /**
- * Middleware to detect locale from request headers and add to query params
+ * Middleware to handle CORS and detect locale from request headers
  * This allows using X-User-Language or Accept-Language headers instead of ?locale=
  */
 export function middleware(request: NextRequest) {
@@ -13,6 +13,20 @@ export function middleware(request: NextRequest) {
   // Only apply to /api routes (excluding /api/chat which has its own handling)
   if (!pathname.startsWith('/api/') || pathname.startsWith('/api/chat')) {
     return NextResponse.next()
+  }
+
+  // Handle CORS preflight requests
+  if (request.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
+        'Access-Control-Allow-Headers':
+          'Content-Type, Authorization, x-user-language, X-User-Language',
+        'Access-Control-Max-Age': '86400',
+      },
+    })
   }
 
   // Skip if locale is already in query params
@@ -39,10 +53,24 @@ export function middleware(request: NextRequest) {
   if (locale && SUPPORTED_LOCALES.includes(locale) && locale !== DEFAULT_LOCALE) {
     const url = request.nextUrl.clone()
     url.searchParams.set('locale', locale)
-    return NextResponse.rewrite(url)
+    const response = NextResponse.rewrite(url)
+    addCorsHeaders(response)
+    return response
   }
 
-  return NextResponse.next()
+  const response = NextResponse.next()
+  addCorsHeaders(response)
+  return response
+}
+
+// Helper function to add CORS headers to response
+function addCorsHeaders(response: NextResponse) {
+  response.headers.set('Access-Control-Allow-Origin', '*')
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH')
+  response.headers.set(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, x-user-language, X-User-Language',
+  )
 }
 
 export const config = {
