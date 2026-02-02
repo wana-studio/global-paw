@@ -120,6 +120,7 @@ export const media = pgTable(
   {
     id: serial('id').primaryKey(),
     alt: varchar('alt').notNull(),
+    prefix: varchar('prefix').default('media'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
