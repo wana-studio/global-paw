@@ -15,12 +15,14 @@ export async function GET(req: Request) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
 
+  console.log('fetching user by token', token)
   const {
     data: { user },
     error,
   } = await supabase.auth.getUser(token)
 
   if (error || !user) {
+    console.error('Error fetching user:', error)
     return new Response('Unauthorized', { status: 403 })
   }
 
