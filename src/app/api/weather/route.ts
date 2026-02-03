@@ -111,6 +111,7 @@ export async function GET(request: NextRequest) {
         weather: current.weather,
       },
       city.name,
+      locale, // Pass language for cache key
     )
 
     // Build current day weather

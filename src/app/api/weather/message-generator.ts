@@ -162,10 +162,10 @@ Generate fun, engaging weather messages for this city.`
 
 /**
  * Cached function to get weather messages
- * Messages are cached for 2.5 hours per city
+ * Messages are cached for 2.5 hours per city and language
  */
 const getCachedWeatherMessages = unstable_cache(
-  async (city: string, weatherJson: string): Promise<WeatherMessage[]> => {
+  async (city: string, weatherJson: string, _language: string): Promise<WeatherMessage[]> => {
     const weather: WeatherData = JSON.parse(weatherJson)
     return generateWeatherMessagesWithAI(weather, city)
   },
@@ -180,10 +180,12 @@ const getCachedWeatherMessages = unstable_cache(
  * Generate a weather message for the given conditions
  * Returns a random message from cached AI-generated messages,
  * or a fallback if generation fails
+ * @param language - 'en' for English, 'ar' for Arabic (used for cache key)
  */
 export async function generateWeatherMessage(
   weather: WeatherData,
   city: string,
+  language: string = 'ar',
 ): Promise<WeatherMessage> {
   try {
     // Serialize weather data for cache key
@@ -192,7 +194,8 @@ export async function generateWeatherMessage(
       condition: weather.weather?.[0]?.main,
     })
 
-    const messages = await getCachedWeatherMessages(city, weatherJson)
+    // Include language in cache key to cache per-language
+    const messages = await getCachedWeatherMessages(city, weatherJson, language)
 
     if (messages && messages.length > 0) {
       // Return a random message
