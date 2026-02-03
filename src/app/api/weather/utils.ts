@@ -115,38 +115,11 @@ export function dateToLocalizedTitle(timestamp: number, language: SupportedLangu
 }
 
 /**
- * Aggregate weather conditions to find most appearing weather per day
+ * Process daily weather data - weather is already a single object per day
+ * This function is kept for any future processing needs
  */
 export function mapMostAppearingWeather(days: DayWeather[]): DayWeather[] {
-  return days.map((day) => {
-    if (day.weather.length <= 1) return day
-
-    // Count occurrences of each weather condition by main type
-    const counts = new Map<string, { count: number; weather: OpenWeatherCondition }>()
-    for (const w of day.weather) {
-      const existing = counts.get(w.main)
-      if (existing) {
-        existing.count++
-      } else {
-        counts.set(w.main, { count: 1, weather: w })
-      }
-    }
-
-    // Find the most common weather condition
-    let maxCount = 0
-    let mostCommon: OpenWeatherCondition | null = null
-    for (const { count, weather } of counts.values()) {
-      if (count > maxCount) {
-        maxCount = count
-        mostCommon = weather
-      }
-    }
-
-    return {
-      ...day,
-      weather: mostCommon ? [mostCommon] : day.weather.slice(0, 1),
-    }
-  })
+  return days
 }
 
 /**

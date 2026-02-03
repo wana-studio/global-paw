@@ -11,24 +11,25 @@ import type {
 import { getSeason, getWeekdayInfo } from './utils'
 
 // System prompt for weather message generation
-const WEATHER_MESSAGE_SYSTEM_PROMPT = `You are a friendly, creative weather assistant that generates short, engaging weather messages for a mobile app.
+const WEATHER_MESSAGE_SYSTEM_PROMPT = `You are a weather assistant generating ultra-short weather status messages for a mobile app.
 
 RULES:
 1. Generate 15-20 unique messages per request
 2. Each message must be bilingual (Arabic and English)
-3. Messages should be casual, fun, and helpful
+3. Messages MUST be exactly 2-3 words only - no more!
 4. Include relevant emoji for each message
-5. Focus on practical advice based on weather conditions
-6. Consider the time of day, season, and weekday context
-7. Avoid work-related messages - keep it personal and lifestyle-focused
-8. Keep messages under 100 characters each
-9. Be creative and vary the tone (humorous, poetic, practical, etc.)
+5. Be creative and varied (poetic, playful, descriptive)
+
+EXAMPLES of correct length:
+- "آسمان صاف ☀️" / "Clear skies"
+- "باد خنک 🌬️" / "Cool breeze"
+- "روز عالی ✨" / "Perfect day"
+- "هوا دلپذیر 🌤️" / "Lovely weather"
 
 NEVER:
-- Mention specific brands or products
-- Give medical advice beyond "stay hydrated" type suggestions
-- Be negative or alarming unless weather is truly severe
-- Repeat similar messages`
+- Use more than 3 words per message
+- Write full sentences
+- Give advice or suggestions`
 
 interface WeatherData {
   temp?: number
@@ -52,43 +53,43 @@ function getFallbackMessage(weather: WeatherData): WeatherMessage {
 
   if (temp > 30) {
     return {
-      ar: 'الجو حار جداً! اشرب الكثير من الماء 💧',
-      en: "It's hot out there! Stay hydrated 💧",
+      ar: 'جو حار',
+      en: 'Hot day',
       emoji: '☀️',
     }
   }
   if (temp < 5) {
     return {
-      ar: 'الجو بارد! ارتدِ ملابس دافئة 🧥',
-      en: "Bundle up, it's cold outside! 🧥",
+      ar: 'جو بارد',
+      en: 'Cold day',
       emoji: '❄️',
     }
   }
   if (condition === 'Rain' || condition === 'Drizzle') {
     return {
-      ar: 'المطر قادم، لا تنسَ المظلة! ☔',
-      en: "Don't forget your umbrella! ☔",
+      ar: 'يوم ماطر',
+      en: 'Rainy day',
       emoji: '🌧️',
     }
   }
   if (condition === 'Snow') {
     return {
-      ar: 'الثلج يتساقط! استمتع بمشروب ساخن ☕',
-      en: 'Snow is falling! Enjoy a warm drink ☕',
+      ar: 'ثلج جميل',
+      en: 'Snowy day',
       emoji: '🌨️',
     }
   }
   if (condition === 'Clouds') {
     return {
-      ar: 'الجو غائم ولطيف 🌥️',
-      en: 'Cloudy but pleasant weather 🌥️',
+      ar: 'غائم جزئياً',
+      en: 'Partly cloudy',
       emoji: '☁️',
     }
   }
 
   return {
-    ar: 'طقس جميل اليوم! أتمنى لك يوماً رائعاً ✨',
-    en: 'Beautiful weather today! Have a great day ✨',
+    ar: 'طقس رائع',
+    en: 'Nice weather',
     emoji: '🌤️',
   }
 }

@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
         current.main.temp_max > current.main.temp_min
           ? current.main.temp_max
           : current.main.temp_min + 1,
-      weather: current.weather,
+      weather: current.weather[0],
       backgroundColor: getWeatherBg(currentData.weather[0], theme),
       textColor: getWeatherColor(currentData.weather[0], theme),
       customDescription: {
@@ -133,30 +133,64 @@ export async function GET(request: NextRequest) {
     }
 
     // Aggregate forecast data by day
+    // Track weather counts per day to find most common
+    const dayWeatherCounts = new Map<
+      string,
+      Map<string, { count: number; weather: (typeof current.weather)[0] }>
+    >()
     const dates: DayWeather[] = [currentDate]
-    for (const weather of forecastData) {
-      const date = weather.dt_txt.split(' ')[0]
+
+    for (const forecast of forecastData) {
+      const date = forecast.dt_txt.split(' ')[0]
+
+      // Skip today's date as we already have it
+      if (date === currentDate.date) continue
+
       const existing = dates.find((d) => d.date === date)
 
       if (existing) {
-        existing.min = Math.min(existing.min, weather.main.temp_min)
-        existing.max = Math.max(existing.max, weather.main.temp_max)
-        if (currentDate.date !== date) {
-          existing.weather.push(...weather.weather)
+        existing.min = Math.min(existing.min, forecast.main.temp_min)
+        existing.max = Math.max(existing.max, forecast.main.temp_max)
+
+        // Track weather condition counts
+        let counts = dayWeatherCounts.get(date)
+        if (!counts) {
+          counts = new Map()
+          dayWeatherCounts.set(date, counts)
+        }
+        const weatherMain = forecast.weather[0].main
+        const existingCount = counts.get(weatherMain)
+        if (existingCount) {
+          existingCount.count++
+        } else {
+          counts.set(weatherMain, { count: 1, weather: forecast.weather[0] })
+        }
+
+        // Update to most common weather
+        let maxCount = 0
+        for (const { count, weather } of counts.values()) {
+          if (count > maxCount) {
+            maxCount = count
+            existing.weather = weather
+          }
         }
       } else {
+        // Initialize weather counts for new day
+        const counts = new Map<string, { count: number; weather: (typeof forecast.weather)[0] }>()
+        counts.set(forecast.weather[0].main, { count: 1, weather: forecast.weather[0] })
+        dayWeatherCounts.set(date, counts)
+
         dates.push({
-          min: weather.main.temp_min,
-          max: weather.main.temp_max,
+          min: forecast.main.temp_min,
+          max: forecast.main.temp_max,
           date,
-          weather: [...weather.weather],
-          current: undefined,
-          dateTitle: dateToLocalizedTitle(weather.dt, locale),
+          weather: forecast.weather[0],
+          dateTitle: dateToLocalizedTitle(forecast.dt, locale),
         })
       }
     }
 
-    // Map to most appearing weather per day
+    // Map to most appearing weather per day (already done inline above)
     const filtered = mapMostAppearingWeather(dates)
 
     return NextResponse.json(filtered)

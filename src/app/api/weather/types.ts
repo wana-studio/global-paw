@@ -76,10 +76,10 @@ export interface WeatherMessage {
 export interface DayWeather {
   date: string
   dateTitle: string
-  current: number | undefined
+  current?: number
   min: number
   max: number
-  weather: OpenWeatherCondition[]
+  weather: OpenWeatherCondition
   backgroundColor?: string
   textColor?: string
   customDescription?: {
