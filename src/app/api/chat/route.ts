@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   // 1. Authenticate User with Supabase
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
-    return new Response('Unauthorized', { status: 401 })
+    return new Response('Unauthenticated', { status: 401 })
   }
 
   const token = authHeader.replace('Bearer ', '')
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser(token)
 
   if (error || !user) {
-    return new Response('Unauthorized', { status: 401 })
+    return new Response('Unauthorized', { status: 403 })
   }
 
   // 2. Initialize Payload
