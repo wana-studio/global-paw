@@ -47,8 +47,8 @@ export default buildConfig({
     Messages,
   ],
   localization: {
-    locales: ['en', 'ar', 'fa'],
-    defaultLocale: 'en',
+    locales: ['en', 'ar'],
+    defaultLocale: 'ar',
     fallback: true,
   },
   editor: lexicalEditor(),

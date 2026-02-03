@@ -106,10 +106,10 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'ar' | 'fa') | ('en' | 'ar' | 'fa')[];
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'ar') | ('en' | 'ar')[];
   globals: {};
   globalsSelect: {};
-  locale: 'en' | 'ar' | 'fa';
+  locale: 'en' | 'ar';
   user: User & {
     collection: 'users';
   };

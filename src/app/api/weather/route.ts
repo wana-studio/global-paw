@@ -29,7 +29,14 @@ export async function GET(request: NextRequest) {
     const lat = searchParams.get('lat')
     const lng = searchParams.get('lng')
     const theme = (searchParams.get('theme') || 'light') as 'light' | 'dark'
-    const locale = (searchParams.get('locale') || 'ar') as SupportedLanguage
+    // 1. Check custom header first (X-User-Language)
+    const headerLocale =
+      request.headers.get('X-User-Language') || request.headers.get('x-user-language')
+    const locale = (headerLocale || searchParams.get('locale') || 'ar') as SupportedLanguage
+
+    // Validate locale is supported
+    const isSupported = ['en', 'ar'].includes(locale)
+    const finalLocale = isSupported ? locale : 'ar'
 
     // Validate query params
     if (!cityName && (!lat || !lng)) {
@@ -54,7 +61,7 @@ export async function GET(request: NextRequest) {
             contains: cityName,
           },
         },
-        locale,
+        locale: finalLocale,
         limit: 1,
       })
 
@@ -72,7 +79,7 @@ export async function GET(request: NextRequest) {
       // Find closest city by coordinates
       const allCities = await payload.find({
         collection: 'cities',
-        locale,
+        locale: finalLocale,
         limit: 1000, // Get all cities for distance calculation
       })
 
@@ -111,13 +118,13 @@ export async function GET(request: NextRequest) {
         weather: current.weather,
       },
       city.name,
-      locale, // Pass language for cache key
+      finalLocale, // Pass language for cache key
     )
 
     // Build current day weather
     const currentDate: DayWeather = {
       date: new Date().toISOString().split('T')[0],
-      dateTitle: locale === 'ar' ? 'اليوم' : 'Today',
+      dateTitle: finalLocale === 'ar' ? 'اليوم' : 'Today',
       current: currentData.main.temp,
       min: current.main.temp_min,
       max:
@@ -128,7 +135,7 @@ export async function GET(request: NextRequest) {
       backgroundColor: getWeatherBg(currentData.weather[0], theme),
       textColor: getWeatherColor(currentData.weather[0], theme),
       customDescription: {
-        text: locale === 'ar' ? weatherMessage.ar : weatherMessage.en,
+        text: finalLocale === 'ar' ? weatherMessage.ar : weatherMessage.en,
         emoji: weatherMessage.emoji,
       },
     }
@@ -186,7 +193,7 @@ export async function GET(request: NextRequest) {
           max: forecast.main.temp_max,
           date,
           weather: forecast.weather[0],
-          dateTitle: dateToLocalizedTitle(forecast.dt, locale),
+          dateTitle: dateToLocalizedTitle(forecast.dt, finalLocale),
         })
       }
     }

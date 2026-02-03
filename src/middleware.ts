@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server'
 
-const SUPPORTED_LOCALES = ['en', 'ar', 'fa']
-const DEFAULT_LOCALE = 'en'
+const SUPPORTED_LOCALES = ['en', 'ar']
+const DEFAULT_LOCALE = 'ar'
 
 /**
  * Middleware to handle CORS and detect locale from request headers
