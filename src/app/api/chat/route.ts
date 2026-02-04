@@ -9,7 +9,13 @@ export const maxDuration = 30
 
 export async function POST(req: Request) {
   const { messages, prompt, conversationId } = await req.json()
-  let _messages = messages
+
+  // Convert AI SDK v5 message format (parts[].text) to standard format (content)
+  let _messages = messages?.map((msg: any) => ({
+    role: msg.role,
+    content: msg.parts?.map((p: any) => p.text).join('') || msg.content || '',
+  }))
+
   if (!_messages?.length && prompt) {
     _messages = [{ role: 'user', content: prompt }]
   }
@@ -111,7 +117,7 @@ export async function POST(req: Request) {
     },
   })
 
-  return result.toTextStreamResponse({
+  return result.toUIMessageStreamResponse({
     headers: {
       'x-conversation-id': activeConversationId,
     },
