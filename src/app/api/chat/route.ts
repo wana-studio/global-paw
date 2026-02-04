@@ -1,4 +1,4 @@
-import { jwtVerify } from 'jose'
+import { jwtVerify, createRemoteJWKSet } from 'jose'
 import { streamText } from 'ai'
 import { google } from '@ai-sdk/google'
 import config from '@payload-config'
@@ -6,6 +6,9 @@ import { getPayload } from 'payload'
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30
+
+// Cache the JWKS to avoid fetching on every request
+const JWKS = createRemoteJWKSet(new URL(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/jwks`))
 
 export async function POST(req: Request) {
   const { messages, prompt, conversationId } = await req.json()
@@ -20,7 +23,7 @@ export async function POST(req: Request) {
     _messages = [{ role: 'user', content: prompt }]
   }
 
-  // 1. Authenticate User via local JWT verification (faster than Supabase API call)
+  // 1. Authenticate User via local JWT verification using JWKS (faster than Supabase API call)
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
     return new Response('Unauthenticated', { status: 401 })
@@ -32,10 +35,10 @@ export async function POST(req: Request) {
   let userEmail: string | undefined
 
   try {
-    const { payload } = await jwtVerify(
-      token,
-      new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET),
-    )
+    const { payload } = await jwtVerify(token, JWKS, {
+      issuer: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1`,
+      audience: 'authenticated',
+    })
     userId = payload.sub as string
     userEmail = payload.email as string | undefined
   } catch {
