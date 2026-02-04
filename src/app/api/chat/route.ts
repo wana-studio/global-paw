@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { jwtVerify } from 'jose'
 import { streamText } from 'ai'
 import { google } from '@ai-sdk/google'
 import config from '@payload-config'
@@ -19,24 +19,26 @@ export async function POST(req: Request) {
   if (!_messages?.length && prompt) {
     _messages = [{ role: 'user', content: prompt }]
   }
-  // 1. Authenticate User with Supabase
+
+  // 1. Authenticate User via local JWT verification (faster than Supabase API call)
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
     return new Response('Unauthenticated', { status: 401 })
   }
 
   const token = authHeader.replace('Bearer ', '')
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(token)
+  let userId: string
+  let userEmail: string | undefined
 
-  if (error || !user) {
+  try {
+    const { payload } = await jwtVerify(
+      token,
+      new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET),
+    )
+    userId = payload.sub as string
+    userEmail = payload.email as string | undefined
+  } catch {
     return new Response('Unauthorized', { status: 403 })
   }
 
@@ -48,7 +50,7 @@ export async function POST(req: Request) {
     collection: 'app-users',
     where: {
       supabaseId: {
-        equals: user.id,
+        equals: userId,
       },
     },
     limit: 1,
@@ -61,8 +63,8 @@ export async function POST(req: Request) {
     const newAppUser = await payload.create({
       collection: 'app-users',
       data: {
-        supabaseId: user.id,
-        email: user.email || '',
+        supabaseId: userId,
+        email: userEmail || '',
       },
     })
     appUserId = newAppUser.id
