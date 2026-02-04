@@ -8,7 +8,9 @@ import { getPayload } from 'payload'
 export const maxDuration = 30
 
 // Cache the JWKS to avoid fetching on every request
-const JWKS = createRemoteJWKSet(new URL(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/jwks`))
+const JWKS = createRemoteJWKSet(
+  new URL(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/.well-known/jwks.json`),
+)
 
 export async function POST(req: Request) {
   const { messages, prompt, conversationId } = await req.json()
