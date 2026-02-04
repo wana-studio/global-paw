@@ -41,7 +41,8 @@ export async function POST(req: Request) {
     })
     userId = payload.sub as string
     userEmail = payload.email as string | undefined
-  } catch {
+  } catch (err) {
+    console.error('JWT verification failed:', err)
     return new Response('Unauthorized', { status: 403 })
   }
 
