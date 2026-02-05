@@ -21,7 +21,7 @@ import {
   pgEnum,
 } from '@payloadcms/db-postgres/drizzle/pg-core'
 import { sql, relations } from '@payloadcms/db-postgres/drizzle'
-export const enum__locales = pgEnum('enum__locales', ['en', 'ar', 'fa'])
+export const enum__locales = pgEnum('enum__locales', ['en', 'ar'])
 export const enum_users_role = pgEnum('enum_users_role', ['admin', 'editor'])
 export const enum_app_users_selected_language = pgEnum('enum_app_users_selected_language', [
   'en',
@@ -398,6 +398,7 @@ export const timezones = pgTable(
   'timezones',
   {
     id: serial('id').primaryKey(),
+    label: varchar('label').notNull(),
     offset: varchar('offset').notNull(),
     timezoneId: varchar('timezone_id').notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
@@ -410,24 +411,6 @@ export const timezones = pgTable(
   (columns) => [
     index('timezones_updated_at_idx').on(columns.updatedAt),
     index('timezones_created_at_idx').on(columns.createdAt),
-  ],
-)
-
-export const timezones_locales = pgTable(
-  'timezones_locales',
-  {
-    label: varchar('label').notNull(),
-    id: serial('id').primaryKey(),
-    _locale: enum__locales('_locale').notNull(),
-    _parentID: integer('_parent_id').notNull(),
-  },
-  (columns) => [
-    uniqueIndex('timezones_locales_locale_parent_id_unique').on(columns._locale, columns._parentID),
-    foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [timezones.id],
-      name: 'timezones_locales_parent_id_fk',
-    }).onDelete('cascade'),
   ],
 )
 
@@ -796,18 +779,7 @@ export const relations_ai_suggestions = relations(ai_suggestions, ({ many }) => 
     relationName: '_locales',
   }),
 }))
-export const relations_timezones_locales = relations(timezones_locales, ({ one }) => ({
-  _parentID: one(timezones, {
-    fields: [timezones_locales._parentID],
-    references: [timezones.id],
-    relationName: '_locales',
-  }),
-}))
-export const relations_timezones = relations(timezones, ({ many }) => ({
-  _locales: many(timezones_locales, {
-    relationName: '_locales',
-  }),
-}))
+export const relations_timezones = relations(timezones, () => ({}))
 export const relations_conversations = relations(conversations, ({ one }) => ({
   appUser: one(app_users, {
     fields: [conversations.appUser],
@@ -946,7 +918,6 @@ type DatabaseSchema = {
   ai_suggestions: typeof ai_suggestions
   ai_suggestions_locales: typeof ai_suggestions_locales
   timezones: typeof timezones
-  timezones_locales: typeof timezones_locales
   conversations: typeof conversations
   messages: typeof messages
   payload_kv: typeof payload_kv
@@ -971,7 +942,6 @@ type DatabaseSchema = {
   relations_search_suggestions: typeof relations_search_suggestions
   relations_ai_suggestions_locales: typeof relations_ai_suggestions_locales
   relations_ai_suggestions: typeof relations_ai_suggestions
-  relations_timezones_locales: typeof relations_timezones_locales
   relations_timezones: typeof relations_timezones
   relations_conversations: typeof relations_conversations
   relations_messages: typeof relations_messages

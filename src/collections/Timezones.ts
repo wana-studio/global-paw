@@ -12,7 +12,6 @@ export const Timezones: CollectionConfig = {
     {
       name: 'label',
       type: 'text',
-      localized: true, // "list of timezones, cause the app has a world clock feature" - arguably the city name might be localized.
       required: true,
     },
     {
