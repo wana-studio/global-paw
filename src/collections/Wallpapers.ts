@@ -27,5 +27,10 @@ export const Wallpapers: CollectionConfig = {
       relationTo: 'wallpaper-categories',
       required: true,
     },
+    {
+      name: 'isDefault',
+      type: 'checkbox',
+      defaultValue: false,
+    },
   ],
 }

@@ -178,7 +178,7 @@ export interface AppUser {
   email?: string | null;
   selectedBackground?: (number | null) | Wallpaper;
   selectedLanguage?: ('en' | 'ar' | 'fa') | null;
-  selectedTheme?: ('light' | 'dark' | 'system') | null;
+  selectedTheme?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -191,6 +191,7 @@ export interface Wallpaper {
   title: string;
   file: number | Media;
   category: number | WallpaperCategory;
+  isDefault?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -497,6 +498,7 @@ export interface WallpapersSelect<T extends boolean = true> {
   title?: T;
   file?: T;
   category?: T;
+  isDefault?: T;
   updatedAt?: T;
   createdAt?: T;
 }

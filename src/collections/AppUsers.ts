@@ -49,13 +49,8 @@ export const AppUsers: CollectionConfig = {
     },
     {
       name: 'selectedTheme',
-      type: 'select',
+      type: 'text',
       defaultValue: 'system',
-      options: [
-        { label: 'Light', value: 'light' },
-        { label: 'Dark', value: 'dark' },
-        { label: 'System', value: 'system' },
-      ],
     },
   ],
 }

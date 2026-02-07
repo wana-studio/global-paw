@@ -17,6 +17,7 @@ import {
   timestamp,
   serial,
   numeric,
+  boolean,
   jsonb,
   pgEnum,
 } from '@payloadcms/db-postgres/drizzle/pg-core'
@@ -27,11 +28,6 @@ export const enum_app_users_selected_language = pgEnum('enum_app_users_selected_
   'en',
   'ar',
   'fa',
-])
-export const enum_app_users_selected_theme = pgEnum('enum_app_users_selected_theme', [
-  'light',
-  'dark',
-  'system',
 ])
 export const enum_messages_role = pgEnum('enum_messages_role', ['user', 'assistant', 'system'])
 
@@ -99,7 +95,7 @@ export const app_users = pgTable(
       onDelete: 'set null',
     }),
     selectedLanguage: enum_app_users_selected_language('selected_language').default('en'),
-    selectedTheme: enum_app_users_selected_theme('selected_theme').default('system'),
+    selectedTheme: varchar('selected_theme').default('system'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -197,6 +193,7 @@ export const wallpapers = pgTable(
       .references(() => wallpaper_categories.id, {
         onDelete: 'set null',
       }),
+    isDefault: boolean('is_default').default(false),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -899,7 +896,6 @@ type DatabaseSchema = {
   enum__locales: typeof enum__locales
   enum_users_role: typeof enum_users_role
   enum_app_users_selected_language: typeof enum_app_users_selected_language
-  enum_app_users_selected_theme: typeof enum_app_users_selected_theme
   enum_messages_role: typeof enum_messages_role
   users_sessions: typeof users_sessions
   users: typeof users

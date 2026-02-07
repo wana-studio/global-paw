@@ -91,11 +91,24 @@ export async function PATCH(req: Request) {
     })
   }
 
-  // 5. Build update data (only include provided fields)
+  // 5. Build update data (only include provided fields with valid values)
   const updateData: Record<string, any> = {}
-  if (selectedLanguage !== undefined) updateData.selectedLanguage = selectedLanguage
-  if (selectedTheme !== undefined) updateData.selectedTheme = selectedTheme
-  if (selectedBackground !== undefined) updateData.selectedBackground = selectedBackground
+
+  const validLanguages = ['en', 'ar', 'fa']
+
+  if (selectedLanguage && validLanguages.includes(selectedLanguage)) {
+    updateData.selectedLanguage = selectedLanguage
+  }
+  if (selectedTheme) {
+    updateData.selectedTheme = selectedTheme
+  }
+  if (selectedBackground !== undefined && selectedBackground !== null) {
+    updateData.selectedBackground = selectedBackground
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return NextResponse.json({ error: 'No valid config fields provided' }, { status: 400 })
+  }
 
   // 6. Update AppUser
   const updatedUser = await payload.update({
