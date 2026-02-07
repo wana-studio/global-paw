@@ -171,9 +171,29 @@ export async function GET(req: Request) {
 
   const user = appUserResult.docs[0]
 
+  // Extract wallpaper URL by fetching the media separately
+  let wallpaperUrl = null
+  if (user.selectedBackground && typeof user.selectedBackground === 'object') {
+    const wallpaper = user.selectedBackground as any
+    const fileId = typeof wallpaper.file === 'object' ? wallpaper.file.id : wallpaper.file
+
+    if (fileId) {
+      try {
+        const mediaDoc = await payload.findByID({
+          collection: 'media',
+          id: fileId,
+        })
+        wallpaperUrl = mediaDoc.url || null
+      } catch (err) {
+        console.error('Failed to fetch media:', err)
+      }
+    }
+  }
+
   return NextResponse.json({
     selectedLanguage: user.selectedLanguage,
     selectedTheme: user.selectedTheme,
     selectedBackground: user.selectedBackground,
+    wallpaperUrl,
   })
 }
