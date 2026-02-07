@@ -162,7 +162,7 @@ export async function GET(req: Request) {
       },
     },
     limit: 1,
-    depth: 1, // Include related wallpaper data
+    depth: 2, // Include wallpaper and nested media data
   })
 
   if (appUserResult.docs.length === 0) {
