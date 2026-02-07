@@ -2,7 +2,7 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-   DROP TABLE "timezones_locales" CASCADE;
+   DROP TABLE IF EXISTS "timezones_locales" CASCADE;
   ALTER TABLE "wallpaper_categories_locales" ALTER COLUMN "_locale" SET DATA TYPE text;
   ALTER TABLE "wallpapers_locales" ALTER COLUMN "_locale" SET DATA TYPE text;
   ALTER TABLE "cities_locales" ALTER COLUMN "_locale" SET DATA TYPE text;
@@ -17,7 +17,13 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   ALTER TABLE "calendar_events_locales" ALTER COLUMN "_locale" SET DATA TYPE "public"."_locales" USING "_locale"::"public"."_locales";
   ALTER TABLE "search_suggestions_locales" ALTER COLUMN "_locale" SET DATA TYPE "public"."_locales" USING "_locale"::"public"."_locales";
   ALTER TABLE "ai_suggestions_locales" ALTER COLUMN "_locale" SET DATA TYPE "public"."_locales" USING "_locale"::"public"."_locales";
-  ALTER TABLE "timezones" ADD COLUMN "label" varchar NOT NULL;`)
+  
+  DO $$ 
+  BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='timezones' AND column_name='label') THEN
+      ALTER TABLE "timezones" ADD COLUMN "label" varchar NOT NULL;
+    END IF;
+  END $$;`)
 }
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
