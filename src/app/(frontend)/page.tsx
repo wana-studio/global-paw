@@ -3,15 +3,18 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import './styles.css'
+import Link from 'next/link'
 
 /* ============================================================
    Content Map — all bilingual copy lives here
    ============================================================ */
 type Lang = 'ar' | 'en'
 
+const refiqLink =
+  'https://chromewebstore.google.com/detail/refiq-minimal-dashboard/gndkahkfkpohignlahhllbegojfjgcna'
 const content: Record<Lang, Record<string, any>> = {
   ar: {
-    nav: { logo: 'رفيق', features: 'المميزات', about: 'لماذا رفيق؟' },
+    nav: { logo: 'رفيق', features: 'المميزات', about: 'لماذا رفيق؟', cta: 'أضف رفيق' },
     hero: {
       tagline: 'خلي صفحة التبويب الجديدة في كروم بسيطة ومفيدة',
       cta: 'أضف رفيق إلى Chrome مجانًا',
@@ -123,7 +126,7 @@ const content: Record<Lang, Record<string, any>> = {
   },
 
   en: {
-    nav: { logo: 'Refiq', features: 'Features', about: 'Why Refiq?' },
+    nav: { logo: 'Refiq', features: 'Features', about: 'Why Refiq?', cta: 'Add Refiq' },
     hero: {
       tagline: 'Make your Chrome new tab simple and useful',
       cta: 'Add Refiq to Chrome — Free',
@@ -317,6 +320,9 @@ export default function HomePage() {
           <div className="nav-links">
             <a href="#features">{t.nav.features}</a>
             <a href="#philosophy">{t.nav.about}</a>
+            <Link href={refiqLink} className="nav-cta">
+              {t.nav.cta}
+            </Link>
             <div className="lang-toggle">
               <button className={lang === 'ar' ? 'active' : ''} onClick={() => toggleLang('ar')}>
                 AR
@@ -336,7 +342,7 @@ export default function HomePage() {
             <Image src="/logotype.png" alt="Refiq — رفيق" width={220} height={80} priority />
           </div>
           <p className="hero-tagline">{t.hero.tagline}</p>
-          <button className="cta-btn" onClick={() => window.open('#', '_blank')}>
+          <Link className="cta-btn" href={refiqLink}>
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -349,7 +355,7 @@ export default function HomePage() {
               <path d="M8 12h8M12 8v8" />
             </svg>
             {t.hero.cta}
-          </button>
+          </Link>
           <div className="hero-preview">
             <Image
               src="/preview.png"
@@ -506,7 +512,7 @@ export default function HomePage() {
         <div className="container fade-in">
           <h2 className="final-heading">{t.finalCta.heading}</h2>
           <p className="final-sub">{t.finalCta.sub}</p>
-          <button className="cta-btn" onClick={() => window.open('#', '_blank')}>
+          <Link className="cta-btn" href={refiqLink}>
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -519,7 +525,7 @@ export default function HomePage() {
               <path d="M8 12h8M12 8v8" />
             </svg>
             {t.finalCta.cta}
-          </button>
+          </Link>
           <p className="final-reassurance">{t.finalCta.reassurance}</p>
         </div>
       </section>
